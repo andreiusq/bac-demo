@@ -23,7 +23,7 @@ export default function LoginPage() {
     setError('')
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/login`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
