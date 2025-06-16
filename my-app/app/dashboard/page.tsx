@@ -61,9 +61,17 @@ export default function DashboardPage() {
           overviewRes.json()
         ]);
 
+        // Convert average_score to number if it's a string
+        const processedOverview = {
+          ...overview,
+          average_score: typeof overview.average_score === 'string' 
+            ? parseFloat(overview.average_score) 
+            : overview.average_score
+        };
+
         setExamCenters(centers);
         setSubjects(subjects);
-        setOverview(overview);
+        setOverview(processedOverview);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError(err instanceof Error ? err.message : 'Eroare la încărcarea datelor');
@@ -74,6 +82,11 @@ export default function DashboardPage() {
 
     fetchData();
   }, []);
+
+  const formatScore = (score: number | undefined | null): string => {
+    if (score === undefined || score === null) return '0.00';
+    return Number(score).toFixed(2);
+  };
 
   if (loading) {
     return (
@@ -114,7 +127,7 @@ export default function DashboardPage() {
             <CardTitle>Medie Generală</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{overview?.average_score?.toFixed(2) || '0.00'}</div>
+            <div className="text-3xl font-bold">{formatScore(overview?.average_score)}</div>
             <div className="text-sm text-gray-500 mt-2">puncte</div>
           </CardContent>
         </Card>
@@ -178,7 +191,7 @@ export default function DashboardPage() {
                           />
                         </div>
                       </TableCell>
-                      <TableCell>{center.average_score?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell>{formatScore(center.average_score)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -228,7 +241,7 @@ export default function DashboardPage() {
                           />
                         </div>
                       </TableCell>
-                      <TableCell>{subject.average_score?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell>{formatScore(subject.average_score)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

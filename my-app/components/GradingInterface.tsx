@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import { motion } from 'framer-motion';
 import { validateScores, calculateTotalScore } from '@/utils/rubricValidation';
-
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+import '@/lib/pdfjs-config';
 
 interface Submission {
   id: number;
@@ -153,7 +151,7 @@ const GradingInterface: React.FC<GradingInterfaceProps> = ({
   if (!submission) return <div className="text-center p-4">Lucrarea nu a fost găsită</div>;
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-50">
       {/* PDF Viewer */}
       <div className="w-1/2 p-4 overflow-auto">
         <Document
@@ -161,53 +159,53 @@ const GradingInterface: React.FC<GradingInterfaceProps> = ({
           onLoadSuccess={({ numPages }) => setNumPages(numPages)}
           className="flex flex-col items-center"
         >
-          <Page
-            pageNumber={currentPage}
+          <Page 
+            pageNumber={currentPage} 
             renderTextLayer={false}
             renderAnnotationLayer={false}
             className="shadow-lg"
           />
         </Document>
-        <div className="flex justify-center mt-4 space-x-2">
+        <div className="flex justify-center gap-4 mt-4">
           <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage <= 1}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md disabled:opacity-50"
           >
             Anterior
           </button>
-          <span className="px-4 py-2">
+          <span className="px-4 py-2 text-gray-700">
             Pagina {currentPage} din {numPages}
           </span>
           <button
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, numPages))}
             disabled={currentPage >= numPages}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md disabled:opacity-50"
           >
             Următor
           </button>
         </div>
       </div>
 
-      {/* Grading Panel */}
-      <div className="w-1/2 p-4 overflow-auto bg-gray-50">
-        <h2 className="text-2xl font-bold mb-4">
+      {/* Grading Interface */}
+      <div className="w-1/2 p-4 overflow-auto bg-white">
+        <h2 className="text-2xl font-bold mb-4 text-gray-900">
           {isReview ? 'Verificare Notă' : 'Corectare Lucrare'}
         </h2>
         
         {isReview && submission.initial_grade && (
           <div className="mb-4 p-4 bg-yellow-50 rounded-lg">
-            <h3 className="font-semibold mb-2">Notă inițială</h3>
-            <p>Corector: {submission.initial_grade.graded_by}</p>
-            <p>Data: {new Date(submission.initial_grade.graded_at).toLocaleString('ro-RO')}</p>
-            <p>Punctaj: {submission.initial_grade.score}</p>
+            <h3 className="font-semibold mb-2 text-gray-900">Notă inițială</h3>
+            <p className="text-gray-700">Corector: {submission.initial_grade.graded_by}</p>
+            <p className="text-gray-700">Data: {new Date(submission.initial_grade.graded_at).toLocaleString('ro-RO')}</p>
+            <p className="text-gray-700">Punctaj: {submission.initial_grade.score}</p>
           </div>
         )}
 
         <div className="mb-4">
-          <p className="font-semibold">Student: {submission.student_name}</p>
-          <p>Subiect: {submission.exam_title}</p>
-          <p>Materie: {submission.subject_name}</p>
+          <p className="font-semibold text-gray-900">Student: {submission.student_name}</p>
+          <p className="text-gray-700">Subiect: {submission.exam_title}</p>
+          <p className="text-gray-700">Materie: {submission.subject_name}</p>
         </div>
 
         {validationErrors.length > 0 && (
@@ -223,7 +221,7 @@ const GradingInterface: React.FC<GradingInterfaceProps> = ({
 
         {/* Subiectul I */}
         <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-2">Subiectul I (50 puncte)</h3>
+          <h3 className="text-xl font-semibold mb-2 text-black">Subiectul I (50 puncte)</h3>
           
           {/* Subiectul I.A */}
           <div className="mb-4">
@@ -247,7 +245,7 @@ const GradingInterface: React.FC<GradingInterfaceProps> = ({
 
           {/* Subiectul I.B */}
           <div className="mb-4">
-            <h4 className="font-semibold">B. (20 puncte)</h4>
+            <h4 className="font-semibold text-black">B. (20 puncte)</h4>
             {Object.entries(scores.subiect1B).map(([key, value]) => (
               <div key={key} className="mb-2">
                 <label className="block text-sm font-medium text-gray-700">
@@ -386,13 +384,14 @@ const GradingInterface: React.FC<GradingInterfaceProps> = ({
           </p>
         </div>
 
-        {/* Submit Button */}
-        <button
-          onClick={handleGradeSubmit}
-          className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-        >
-          {isReview ? 'Trimite Verificarea' : 'Trimite Nota'}
-        </button>
+        <div className="mt-6">
+          <button
+            onClick={handleGradeSubmit}
+            className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+          >
+            {isReview ? 'Trimite Verificarea' : 'Trimite Nota'}
+          </button>
+        </div>
       </div>
     </div>
   );

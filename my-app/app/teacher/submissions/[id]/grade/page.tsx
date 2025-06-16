@@ -4,14 +4,15 @@ import { useRouter } from 'next/navigation';
 import GradingInterface from '@/components/GradingInterface';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function GradeSubmissionPage({ params }: PageProps) {
   const router = useRouter();
-  const submissionId = parseInt(params.id);
+  const resolvedParams = React.use(params);
+  const submissionId = parseInt(resolvedParams.id);
 
   const handleGradeSubmitted = () => {
     router.push('/teacher/submissions');

@@ -218,4 +218,65 @@ router.post('/:submissionId/review', authenticateToken, async (req: Authenticate
   }
 });
 
+// Get single submission details
+router.get('/:submissionId', authenticateToken, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { submissionId } = req.params;
+    const teacherId = req.user?.id;
+
+    // First get the teacher record
+    const [teachers] = await db.execute<RowDataPacket[]>(
+      'SELECT id FROM teachers WHERE user_id = ?',
+      [teacherId]
+    );
+
+    if (!teachers || teachers.length === 0) {
+      res.status(403).json({ error: 'Nu sunteți autorizat să corectați lucrări' });
+      return;
+    }
+
+    const [submissions] = await db.execute<RowDataPacket[]>(`
+      SELECT 
+        s.id,
+        s.file_path,
+        s.status,
+        s.submitted_at,
+        u.name as student_name,
+        ep.title as exam_title,
+        sub.name as subject_name,
+        g.score,
+        g.feedback,
+        g.detailed_scores,
+        u2.name as graded_by,
+        g.graded_at
+      FROM student_submissions s
+      JOIN students st ON s.student_id = st.id
+      JOIN users u ON st.user_id = u.id
+      JOIN exam_papers ep ON s.exam_paper_id = ep.id
+      JOIN subjects sub ON ep.subject_id = sub.id
+      LEFT JOIN grades g ON s.id = g.submission_id
+      LEFT JOIN teachers t ON g.teacher_id = t.id
+      LEFT JOIN users u2 ON t.user_id = u2.id
+      WHERE s.id = ?
+    `, [submissionId]);
+
+    if (!submissions || submissions.length === 0) {
+      res.status(404).json({ error: 'Lucrarea nu a fost găsită' });
+      return;
+    }
+
+    const submission = submissions[0];
+    
+    // If there's a grade, format the detailed_scores
+    if (submission.detailed_scores) {
+      submission.detailed_scores = JSON.parse(submission.detailed_scores);
+    }
+
+    res.json(submission);
+  } catch (error) {
+    console.error('Error fetching submission:', error);
+    res.status(500).json({ error: 'Eroare la încărcarea lucrării' });
+  }
+});
+
 export default router; 
